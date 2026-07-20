@@ -1,0 +1,1 @@
+Save the chosen application screenshot in this folder as posterfolio-app.png

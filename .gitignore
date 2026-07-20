@@ -1,8 +1,9 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *.pyd
 *.pyo
+*.egg-info/
 
 # Virtual environments
 .venv/
@@ -33,10 +34,10 @@ cache/
 exports/
 projects/
 
-# Local configuration (contains personal TMDb token)
+# Local configuration containing the user's TMDb token
 config/settings.json
 
-# Keep the example configuration
+# Keep the safe example configuration
 !config/settings.example.json
 
 # Logs and temporary files
@@ -47,5 +48,3 @@ config/settings.json
 
 # Generated project-tree dump
 tree.txt
-
-src/*.egg-info/

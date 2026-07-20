@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a reproducible problem in Posterfolio
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Posterfolio. Do not include your TMDb token.
+  - type: input
+    id: version
+    attributes:
+      label: Posterfolio version
+      description: Version number or Git commit, if known.
+      placeholder: v1.0.0 or commit hash
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11 24H2 or macOS 15
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the exact steps that trigger the problem.
+      placeholder: |
+        1. Open...
+        2. Import...
+        3. Click...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or logs
+      description: Drag in screenshots or paste relevant output. Remove personal information and secrets.
