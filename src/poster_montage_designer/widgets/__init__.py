@@ -1,0 +1,1 @@
+"""Custom widgets for Poster Montage Designer."""

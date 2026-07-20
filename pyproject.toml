@@ -1,0 +1,8 @@
+[project]
+name = "poster-montage-designer"
+version = "0.1.0"
+description = "Personal poster montage designer"
+requires-python = ">=3.13"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
