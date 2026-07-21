@@ -17,7 +17,7 @@ from poster_montage_designer.paths import (
     POSTER_W500_CACHE_DIR,
     ensure_app_dirs,
 )
-from poster_montage_designer.services.tmdb import lookup_imdb_id
+from poster_montage_designer.services.tmdb import SSL_CONTEXT, lookup_imdb_id
 
 
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
@@ -240,13 +240,17 @@ def _get_json(url: str) -> dict[str, Any]:
         headers={
             "Authorization": f"Bearer {config.tmdb_read_token}",
             "Accept": "application/json",
-            "User-Agent": "PosterMontageDesigner/0.1",
+            "User-Agent": "Posterfolio/1.0.0",
         },
         method="GET",
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
+        with urllib.request.urlopen(
+            request,
+            timeout=30,
+            context=SSL_CONTEXT,
+        ) as response:
             body = response.read().decode("utf-8")
             return json.loads(body)
     except urllib.error.HTTPError as error:
@@ -259,12 +263,16 @@ def _get_json(url: str) -> dict[str, Any]:
 def _download_file(url: str, destination: Path) -> None:
     request = urllib.request.Request(
         url,
-        headers={"User-Agent": "PosterMontageDesigner/0.1"},
+        headers={"User-Agent": "Posterfolio/1.0.0"},
         method="GET",
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
+        with urllib.request.urlopen(
+            request,
+            timeout=30,
+            context=SSL_CONTEXT,
+        ) as response:
             data = response.read()
     except urllib.error.HTTPError as error:
         raise PosterError(f"Poster HTTP error {error.code}: {url}") from error
