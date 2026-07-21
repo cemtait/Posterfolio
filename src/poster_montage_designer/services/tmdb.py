@@ -1,17 +1,24 @@
 from __future__ import annotations
 
 import json
+import ssl
 import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import asdict, dataclass, fields
 from typing import Any
 
+import certifi
+
 from poster_montage_designer.config import load_config
 from poster_montage_designer.paths import METADATA_CACHE_DIR, ensure_app_dirs
 
 
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
+
+# Use certifi's CA bundle explicitly so HTTPS works consistently across
+# Windows, macOS and Linux, regardless of the Python installation.
+SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 
 
 @dataclass
@@ -87,7 +94,6 @@ def _cached_metadata_is_current(imdb_title_id: str) -> bool:
     except Exception:
         return False
 
-    # Older cache files did not include revenue/runtime/popularity. Refresh once.
     return "revenue" in data and "popularity" in data
 
 
@@ -104,18 +110,24 @@ def _get_json(url: str, token: str) -> dict[str, Any]:
         headers={
             "Authorization": f"Bearer {token}",
             "Accept": "application/json",
-            "User-Agent": "PosterMontageDesigner/0.1",
+            "User-Agent": "Posterfolio/1.0.0",
         },
         method="GET",
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=20) as response:
+        with urllib.request.urlopen(
+            request,
+            timeout=20,
+            context=SSL_CONTEXT,
+        ) as response:
             body = response.read().decode("utf-8")
             return json.loads(body)
+
     except urllib.error.HTTPError as error:
         body = error.read().decode("utf-8", errors="replace")
         raise TmdbError(f"TMDb HTTP error {error.code}: {body}") from error
+
     except urllib.error.URLError as error:
         raise TmdbError(f"Could not connect to TMDb: {error}") from error
 
