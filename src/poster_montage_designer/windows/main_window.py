@@ -459,6 +459,58 @@ class MainWindow(QMainWindow):
     def open_settings(self) -> None:
         SettingsDialog(self).exec()
 
+    def _ensure_tmdb_token(self) -> bool:
+        """Guide the user through TMDb setup before any dependent action."""
+        if load_config().tmdb_read_token.strip():
+            return True
+
+        while True:
+            message = QMessageBox(self)
+            message.setIcon(QMessageBox.Icon.Information)
+            message.setWindowTitle("Welcome to Posterfolio")
+            message.setText(
+                "Before Posterfolio can import filmographies or download poster "
+                "artwork, it needs a free TMDb API Read Access Token."
+            )
+            message.setInformativeText(
+                "Choose Open Settings to enter your token. If you do not have one "
+                "yet, choose Get TMDb Token to open the TMDb API settings page in "
+                "your web browser."
+            )
+
+            open_settings_button = message.addButton(
+                "Open Settings",
+                QMessageBox.ButtonRole.AcceptRole,
+            )
+            get_token_button = message.addButton(
+                "Get TMDb Token",
+                QMessageBox.ButtonRole.ActionRole,
+            )
+            cancel_button = message.addButton(
+                "Cancel",
+                QMessageBox.ButtonRole.RejectRole,
+            )
+            message.setDefaultButton(open_settings_button)
+            message.exec()
+
+            clicked_button = message.clickedButton()
+
+            if clicked_button is get_token_button:
+                QDesktopServices.openUrl(QUrl("https://www.themoviedb.org/settings/api"))
+                continue
+
+            if clicked_button is cancel_button:
+                return False
+
+            SettingsDialog(self).exec()
+            if load_config().tmdb_read_token.strip():
+                return True
+
+            self.statusBar().showMessage(
+                "No TMDb access token was saved. The requested action was cancelled."
+            )
+            return False
+
     def show_user_guide(self) -> None:
         UserGuideDialog(self).exec()
 
@@ -480,6 +532,12 @@ class MainWindow(QMainWindow):
         self.settings.setValue("folders/export", str(path))
 
     def import_from_imdb_page(self) -> None:
+        if not self._ensure_tmdb_token():
+            self.statusBar().showMessage(
+                "TMDb access token is required before importing from IMDb."
+            )
+            return
+
         dialog = ImdbImportDialog(self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
@@ -643,6 +701,9 @@ class MainWindow(QMainWindow):
     # Layout commands
 
     def sort_chronological(self) -> None:
+        if not self._ensure_tmdb_token():
+            return
+
         self._push_undo()
         titles = self.project.active_titles
         self._ensure_metadata_for_titles(titles, "Checking dates")
@@ -651,6 +712,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Sorted newest first.")
 
     def sort_popularity(self) -> None:
+        if not self._ensure_tmdb_token():
+            return
+
         self._push_undo()
         titles = self.project.active_titles
         self._ensure_metadata_for_titles(titles, "Checking popularity")
@@ -666,6 +730,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Sorted by TMDb popularity.")
 
     def sort_box_office(self) -> None:
+        if not self._ensure_tmdb_token():
+            return
+
         self._push_undo()
         titles = self.project.active_titles
         self._ensure_metadata_for_titles(titles, "Checking box office")
@@ -1007,6 +1074,12 @@ class MainWindow(QMainWindow):
     # Poster loading / variants
 
     def load_posters(self) -> None:
+        if not self._ensure_tmdb_token():
+            self.statusBar().showMessage(
+                "TMDb access token is required to load posters."
+            )
+            return
+
         active_titles = self.project.active_titles
         if not active_titles:
             self.statusBar().showMessage("Import titles first.")
@@ -1055,6 +1128,9 @@ class MainWindow(QMainWindow):
         self._change_selected_poster(1)
 
     def _change_selected_poster(self, delta: int) -> None:
+        if not self._ensure_tmdb_token():
+            return
+
         title = self._selected_active_title()
         if title is None or not title.imdb_title_id:
             return
