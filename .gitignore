@@ -48,3 +48,8 @@ config/settings.json
 
 # Generated project-tree dump
 tree.txt
+
+# Packaging output
+build/
+dist/
+release/
